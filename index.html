@@ -78,7 +78,7 @@
     // This doesn't change the widget's own text; that language is set per website in the admin console.
     browserLanguage: {
       enabled: true,
-      fieldName: "Browser Language", // must match a custom chat field in the admin console
+      fieldName: "browser_language", // must match a custom chat field in the admin console
       format: "full", // "full" sends e.g. "es-MX"; "primary" sends just "es" (simpler to route on)
       supported: ["en","es"], // optional, e.g. ["en", "es", "fr"]: picks the visitor's first preference in this list
       fallback: "en" // sent when supported is set and none of the visitor's languages are in it
