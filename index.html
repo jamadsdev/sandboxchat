@@ -1,55 +1,17 @@
-<!doctype html>
+<!--
+  Webex Contact Center Live Chat: customized embed
+  Place just before </body> on every page that should offer chat.
+  Edit only the values in CHAT_CONFIG (block 1). Keep the blocks in this order.
 
-<html>
-    <head>
-          <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Halden Crest | Organizational Consulting</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  Optional launcher buttons or links, anywhere on the page:
+    <button type="button" data-open-chat>Chat with support</button>
+    <a href="/help?chat=open">Chat with us</a>   (opens chat on arrival)
+  Launchers stay hidden until chat is ready. Test them outside working hours: if they
+  override the off-hours "Hide completely" setting, remove them outside hours.
+-->
 
-        <!-- Load external CSS styles -->
-        <link rel="stylesheet" href="styles.css">
-
-    </head>
-
-    <body>
-
-        <header>
-    <a href="#" class="logo">Halden Crest</a>
-    <nav aria-label="Main">
-      <ul>
-        <li><a href="#">Capabilities</a></li>
-        <li><a href="#">Industries</a></li>
-        <li><a href="#">Insights</a></li>
-        <li><a href="#">Careers</a></li>
-        <li><a href="#">About</a></li>
-        <li><a href="#">Contact</a></li>
-      </ul>
-    </nav>
-  </header>
-
-  <main>
-    <section class="hero">
-      <div class="hero-content">
-        <h1>Great strategy needs the right people behind it.</h1>
-        <p>We help organizations find, develop and reward the people who will carry them forward.</p>
-        <a href="#" class="btn">Talk to an advisor</a>
-      </div>
-    </section>
-  </main>
-
-        <!-- ========================= YOUR OWN LAUNCHER ========================= -->
-<!-- A real <button>: correct focus behaviour, accessible name, your analytics.
-     Stays disabled until the widget reports ready, so a click never no-ops. -->
-
-        <!-- Load external JavaScript -->
-        <!-- <script src="scripts.js"></script> -->
-
-        <!-- Chat Widget -->
-        <!-- <div id="divicw" data-bind="E3E6C318-0CF4-4D54-B219-FC2BABC46F8F" data-org="" data-guid="d3c9ed2a-ff0f-40b8-abc0-758ced138df6"></div><script>{3}var i={t:function(){try{var e=document.getElementById("divicw"),t=document.createElement("script");t.src="https://chat-widget.produs1.ciscoccservice.com/js/imichatinit.js?t="+new Date().toISOString(),e.insertAdjacentElement("afterend",t),t.addEventListener("load",function(){console.log(new Date().toISOString(),"Livechat script loaded successfully!")}),t.addEventListener("error",function(){console.log(new Date().toISOString(),"Error loading Livechat script");i.o(e)})}catch(e){console.error(e)}},o:function(e){e.insertAdjacentHTML("afterend",'<iframe id="tls_al_frm" frameborder="0" style="overflow:hidden;height:208px;width:394px;position:fixed;display:block;right:48px;bottom:12px;z-index:99999;display:none;"></iframe>');var t=document.getElementById("tls_al_frm"),n=t.contentWindow,d=n.document;d.open();d.write("<!doctype html><html><head><meta charset='utf-8'><title>Untitled Document</title><style>body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:#99a0b0;font-size:14px}.popover__content{background-color:#fbfbfe;padding:1.5rem;border-radius:5px;width:300px;box-shadow:0 2px 5px 0 rgba(0,0,0,0.26);position:relative}.popover__message{font-weight:600;color:#56627c;font-size:16px}.pull-left{float:left}.clearfix{clear:both}.hdr-txt{width:218px;margin-top:3px}.para-txt a{text-decoration:none;color:#005cde}.close-btn{position:absolute;right:15px;top:15px}.close-btn a{text-decoration:none;font-weight:400;color:#56627c;font-size:16px}</style></head><body><div class='popover__content'><div class='close-btn'><a href='#' onclick='closeTLSAlert()'>X</a></div><div class='popover__message'><div class='pull-left hdr-txt'>This browser version is not supported on LiveChat.</div></div><div class='clearfix'></div><p class='para-txt'>Please update your browser to the latest version and re-open the website to access the widget.</p></div><script>function closeTLSAlert(){window.parent.postMessage({key:'close_tls_alert',value:'close_tls_alert',action:'close_tls_alert'},'*');}<\/script></body></html>");d.close();t.style.display='block';window.addEventListener('message',function(e){'close_tls_alert'===e.data.action&&i.s()})},s:function(){var e=document.getElementById('tls_al_frm');e&&e.remove()}};i.t();</script> -->
-        <style>
+<!-- Hides launchers until chat is ready. For no flash on page load, move this rule into your site's CSS. -->
+<style>
   html:not(.webex-chat-ready) [data-open-chat] { display: none !important; }
 </style>
 
@@ -80,10 +42,10 @@
       enabled: true,
       fieldName: "Browser Language", // must match a custom chat field in the admin console
       format: "full", // "full" sends e.g. "es-MX"; "primary" sends just "es" (simpler to route on)
-      supported: ["en","es"], // optional, e.g. ["en", "es", "fr"]: picks the visitor's first preference in this list
+      supported: [], // optional, e.g. ["en", "es", "fr"]: picks the visitor's first preference in this list
       fallback: "en" // sent when supported is set and none of the visitor's languages are in it
     },
-      
+
     // Context shown to agents. Names must match custom chat fields in the admin console.
     // Empty values are skipped. Never send card numbers, passwords, government IDs or health details.
     getCustomFields: function () {
@@ -101,9 +63,9 @@
      Keep the global name `i`: Cisco's script may reference it. -->
 <div
   id="divicw"
-  data-bind="D3E83DDF-EB59-4A39-91A1-FA21BEC8AB5A"
+  data-bind="57081D45-F7E7-4102-A057-92A6A187C70D"
   data-org=""
-  data-guid="638bcb9e-18c9-468b-92b3-4f69b75a076e"
+  data-guid="35dcf002-460d-47e2-a1c2-ff301cff0e7e"
 ></div>
 <script>
   var i = {
@@ -258,10 +220,62 @@
       loadChat();
     }
 
+    // ----- Browser language -----
+    function canonicalTag(tag) {
+      if (!tag) return "";
+      if (window.Intl && typeof Intl.getCanonicalLocales === "function") {
+        try {
+          return Intl.getCanonicalLocales(String(tag))[0] || ""; // "es-mx" -> "es-MX"
+        } catch (e) {
+          return ""; // not a valid language tag
+        }
+      }
+      return String(tag);
+    }
+
+    function primaryTag(tag) {
+      return tag.split("-")[0].toLowerCase();
+    }
+
+    // Returns the visitor's preferred language as a tag ("es-MX" or "es"), or "" if unknown.
+    function detectBrowserLanguage() {
+      var opts = config.browserLanguage || {};
+      var nav = window.navigator || {};
+      var list = nav.languages && nav.languages.length ? nav.languages : [nav.language];
+      var prefs = [];
+      for (var n = 0; n < list.length; n++) {
+        var tag = canonicalTag(list[n]);
+        if (tag) prefs.push(tag);
+      }
+      var supported = (opts.supported || []).map(function (s) {
+        return primaryTag(String(s));
+      });
+      var match = prefs[0];
+      if (supported.length) {
+        match = null;
+        for (var k = 0; k < prefs.length && !match; k++) {
+          if (supported.indexOf(primaryTag(prefs[k])) !== -1) match = prefs[k];
+        }
+        if (!match) return opts.fallback || "";
+      }
+      if (!match) return "";
+      return opts.format === "primary" ? primaryTag(match) : match;
+    }
+
     // ----- Context for agents (custom chat fields) -----
     function sendCustomFields(w) {
-      if (typeof config.getCustomFields !== "function") return;
-      var raw = config.getCustomFields() || {};
+      var raw = {};
+      if (typeof config.getCustomFields === "function") {
+        var site = config.getCustomFields() || {};
+        Object.keys(site).forEach(function (name) {
+          raw[name] = site[name];
+        });
+      }
+      var lang = config.browserLanguage || {};
+      // A value set in getCustomFields wins over the detected one.
+      if (lang.enabled && lang.fieldName && !(lang.fieldName in raw)) {
+        raw[lang.fieldName] = detectBrowserLanguage();
+      }
       var fields = {};
       var count = 0;
       Object.keys(raw).forEach(function (name) {
@@ -351,8 +365,12 @@
     window.webexChat = {
       grantConsent: grantConsent, // call from your cookie banner when requireConsent is true
       open: openChat, // open chat from your own code
-      refresh: refresh // call from your router if page data updates after navigation
+      refresh: refresh, // call from your router if page data updates after navigation
+      language: detectBrowserLanguage // run webexChat.language() in dev tools to see the value sent
     };
+
+    // Resend fields if the visitor changes their browser language mid-visit.
+    if ((config.browserLanguage || {}).enabled) window.addEventListener("languagechange", refresh);
 
     onChatReady(function (w) {
       document.documentElement.classList.add("webex-chat-ready");
@@ -368,6 +386,3 @@
     if (!config.requireConsent || hasStoredConsent()) loadChat();
   })();
 </script>
-    </body>
-
-</html>
