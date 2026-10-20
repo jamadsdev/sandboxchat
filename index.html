@@ -74,6 +74,21 @@
     fallbackPhoneDial: "+18005550100",
     fallbackContactUrl: "https://www.example.com/contact",
 
+    // Load a different chat widget for each browser language.
+    // The values in <div id="divicw"> (block 2) are the default widget: used for defaultLanguage
+    // and for visitors whose languages have no widget below.
+    // The choice is kept for the rest of the browser session, so a chat in progress isn't lost.
+    // To test a widget without changing browser settings, add ?chatlang=es to any page URL.
+    languageWidgets: {
+      defaultLanguage: "en", // the language of the default widget
+      widgets: {
+        // Copy both values from each language's embed code in the admin console, then uncomment.
+         es: { dataBind: "59013178-B609-408F-B394-1DDD4A58B374", dataGuid: "0ee68fb9-c125-4c7a-9dfe-c8b9fd6ee4f5" },
+        // fr: { dataBind: "PASTE-DATA-BIND", dataGuid: "PASTE-DATA-GUID" },
+        // "fr-CA": { dataBind: "PASTE-DATA-BIND", dataGuid: "PASTE-DATA-GUID" }, // wins over "fr" for fr-CA
+      }
+    },
+      
     // Visitor's browser language, sent to agents and the flow as a custom chat field.
     // This doesn't change the widget's own text; that language is set per website in the admin console.
     browserLanguage: {
@@ -276,6 +291,18 @@
       return tag.split("-")[0].toLowerCase();
     }
 
+    // The visitor's languages in preference order, e.g. ["es-MX", "es", "en-US"].
+    function browserLanguagePrefs() {
+      var nav = window.navigator || {};
+      var list = nav.languages && nav.languages.length ? nav.languages : [nav.language];
+      var prefs = [];
+      for (var n = 0; n < list.length; n++) {
+        var tag = canonicalTag(list[n]);
+        if (tag) prefs.push(tag);
+      }
+      return prefs;
+    }
+
     // Returns the visitor's preferred language as a tag ("es-MX" or "es"), or "" if unknown.
     function detectBrowserLanguage() {
       var opts = config.browserLanguage || {};
@@ -301,6 +328,75 @@
       return opts.format === "primary" ? primaryTag(match) : match;
     }
 
+    // ----- Per-language widget (data-bind and data-guid) -----
+    var WIDGET_KEY = "webexChatWidget";
+    var GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    var chosenWidget = "default";
+ 
+    // Language widgets with both IDs filled in, keyed by lowercase tag ("es", "fr-ca").
+    function validLanguageWidgets() {
+      var listed = (config.languageWidgets || {}).widgets || {};
+      var valid = {};
+      Object.keys(listed).forEach(function (key) {
+        var w = listed[key] || {};
+        if (GUID.test(w.dataBind) && GUID.test(w.dataGuid)) {
+          valid[key.toLowerCase()] = w;
+        } else {
+          console.warn('Chat widget for "' + key + '" skipped: copy both dataBind and dataGuid from its embed code.');
+        }
+      });
+      return valid;
+    }
+ 
+    // Widget key for one language tag: exact region first ("fr-ca"), then language ("fr").
+    function widgetForTag(tag, valid) {
+      var full = tag.toLowerCase();
+      var lang = primaryTag(tag);
+      var defaultLang = primaryTag(String((config.languageWidgets || {}).defaultLanguage || "en"));
+      if (valid[full]) return full;
+      if (valid[lang]) return lang;
+      if (lang === defaultLang) return "default";
+      return null;
+    }
+ 
+    function chooseWidget(valid) {
+      // 1. Test override: ?chatlang=es
+      var forced = null;
+      try {
+        forced = new URLSearchParams(location.search).get("chatlang");
+      } catch (e) {}
+      if (forced) {
+        var forcedTag = canonicalTag(forced);
+        return (forcedTag && widgetForTag(forcedTag, valid)) || "default";
+      }
+      // 2. Same widget as earlier in this session, so a chat in progress stays visible.
+      var stored = null;
+      try {
+        stored = sessionStorage.getItem(WIDGET_KEY);
+      } catch (e) {}
+      if (stored === "default" || (stored && valid[stored])) return stored;
+      // 3. The visitor's first browser language that has a widget (or is the default's language).
+      var prefs = browserLanguagePrefs();
+      for (var n = 0; n < prefs.length; n++) {
+        var key = widgetForTag(prefs[n], valid);
+        if (key) return key;
+      }
+      return "default";
+    }
+ 
+    // Sets the widget IDs on #divicw. Must run before Cisco's script loads.
+    function applyLanguageWidget() {
+      var valid = validLanguageWidgets();
+      chosenWidget = chooseWidget(valid);
+      try {
+        sessionStorage.setItem(WIDGET_KEY, chosenWidget);
+      } catch (e) {}
+      if (chosenWidget === "default") return;
+      var holder = document.getElementById("divicw");
+      holder.setAttribute("data-bind", valid[chosenWidget].dataBind);
+      holder.setAttribute("data-guid", valid[chosenWidget].dataGuid);
+    }
+ 
     // ----- Context for agents (custom chat fields) -----
     function sendCustomFields(w) {
       var raw = {};
