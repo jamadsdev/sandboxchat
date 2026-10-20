@@ -83,7 +83,7 @@
       defaultLanguage: "en", // the language of the default widget
       widgets: {
         // Copy both values from each language's embed code in the admin console, then uncomment.
-         es: { dataBind: "59013178-B609-408F-B394-1DDD4A58B374", dataGuid: "0ee68fb9-c125-4c7a-9dfe-c8b9fd6ee4f5" },
+         es: { dataBind: "59013178-B609-408F-B394-1DDD4A58B374", dataGuid: "0ee68fb9-c125-4c7a-9dfe-c8b9fd6ee4f5" }
         // fr: { dataBind: "PASTE-DATA-BIND", dataGuid: "PASTE-DATA-GUID" },
         // "fr-CA": { dataBind: "PASTE-DATA-BIND", dataGuid: "PASTE-DATA-GUID" }, // wins over "fr" for fr-CA
       }
@@ -138,7 +138,7 @@
         console.error(err);
       }
     },
-
+ 
     // Fallback popup: says what to try, offers other ways to get help,
     // fits small screens, and works with keyboards and screen readers.
     o: function (e) {
@@ -159,7 +159,7 @@
         ways.push("visit <a href='" + esc(c.fallbackContactUrl) + "' target='_top'>our contact page</a>");
       }
       var alternatives = ways.length ? " Or " + ways.join(" or ") + "." : "";
-
+ 
       e.insertAdjacentHTML(
         "afterend",
         '<iframe id="tls_al_frm" title="Chat unavailable" style="border:0;overflow:hidden;width:360px;' +
@@ -189,7 +189,7 @@
         i.s();
       });
     },
-
+ 
     // Removes the fallback popup.
     s: function () {
       var e = document.getElementById("tls_al_frm");
@@ -197,7 +197,7 @@
     }
   };
 </script>
-
+ 
 <!-- 3. Client-level customizations -->
 <script>
   (function () {
@@ -209,7 +209,7 @@
     var hiddenByUs = false;
     var openWhenReady = false;
     var lastFieldsJson = "";
-
+ 
     // ----- Run code once the widget is ready -----
     function runSafely(fn) {
       try {
@@ -218,12 +218,12 @@
         console.error("Chat customization failed:", err);
       }
     }
-
+ 
     function onChatReady(fn) {
       if (widget) runSafely(fn);
       else readyCallbacks.push(fn);
     }
-
+ 
     // Cisco's script creates window.imichatwidget; check every 50 ms for up to 30 s.
     function watchForWidget() {
       var tries = 0;
@@ -240,12 +240,17 @@
         }
       })();
     }
-
+ 
     // ----- Loading: consent and idle timing -----
     function loadChat() {
       if (loadRequested) return;
       loadRequested = true;
       var start = function () {
+        try {
+          applyLanguageWidget();
+        } catch (err) {
+          console.error("Chat language widget failed; loading the default widget:", err);
+        }
         i.t();
         watchForWidget();
       };
@@ -257,7 +262,7 @@
       if (document.readyState === "complete") startWhenIdle();
       else window.addEventListener("load", startWhenIdle);
     }
-
+ 
     function hasStoredConsent() {
       try {
         return localStorage.getItem(CONSENT_KEY) === "1";
@@ -265,15 +270,14 @@
         return false;
       }
     }
-
+ 
     function grantConsent() {
       try {
         localStorage.setItem(CONSENT_KEY, "1");
       } catch (e) {}
       loadChat();
     }
-
-    
+ 
     // ----- Browser language -----
     function canonicalTag(tag) {
       if (!tag) return "";
@@ -286,11 +290,11 @@
       }
       return String(tag);
     }
-
+ 
     function primaryTag(tag) {
       return tag.split("-")[0].toLowerCase();
     }
-
+ 
     // The visitor's languages in preference order, e.g. ["es-MX", "es", "en-US"].
     function browserLanguagePrefs() {
       var nav = window.navigator || {};
@@ -302,17 +306,11 @@
       }
       return prefs;
     }
-
+ 
     // Returns the visitor's preferred language as a tag ("es-MX" or "es"), or "" if unknown.
     function detectBrowserLanguage() {
       var opts = config.browserLanguage || {};
-      var nav = window.navigator || {};
-      var list = nav.languages && nav.languages.length ? nav.languages : [nav.language];
-      var prefs = [];
-      for (var n = 0; n < list.length; n++) {
-        var tag = canonicalTag(list[n]);
-        if (tag) prefs.push(tag);
-      }
+      var prefs = browserLanguagePrefs();
       var supported = (opts.supported || []).map(function (s) {
         return primaryTag(String(s));
       });
@@ -327,7 +325,7 @@
       if (!match) return "";
       return opts.format === "primary" ? primaryTag(match) : match;
     }
-
+ 
     // ----- Per-language widget (data-bind and data-guid) -----
     var WIDGET_KEY = "webexChatWidget";
     var GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -428,14 +426,14 @@
       lastFieldsJson = json;
       send.call(w, json, function () {});
     }
-
+ 
     // ----- Hide chat on sensitive pages -----
     function isNoChatPage() {
       return (config.noChatPaths || []).some(function (pattern) {
         return pattern.test(location.pathname);
       });
     }
-
+ 
     function applyVisibility(w) {
       if (isNoChatPage() && !w.hasInitiatedChat()) {
         w.hide();
@@ -446,7 +444,7 @@
         hiddenByUs = false;
       }
     }
-
+ 
     // ----- Launchers and ?chat=open links -----
     function openChat() {
       if (!widget) {
@@ -457,7 +455,7 @@
       hiddenByUs = false;
       widget.maximizeWindow();
     }
-
+ 
     document.addEventListener("click", function (event) {
       var target = event.target;
       var launcher = target && target.closest ? target.closest("[data-open-chat]") : null;
@@ -465,7 +463,7 @@
       event.preventDefault();
       openChat();
     });
-
+ 
     function isDeepLinkOpen() {
       try {
         return new URLSearchParams(location.search).get("chat") === "open";
@@ -473,7 +471,7 @@
         return false;
       }
     }
-
+ 
     // ----- Single-page apps: re-check after client-side navigation -----
     function refresh() {
       onChatReady(function (w) {
@@ -481,7 +479,7 @@
         sendCustomFields(w);
       });
     }
-
+ 
     function watchRouteChanges() {
       ["pushState", "replaceState"].forEach(function (method) {
         var original = history[method];
@@ -495,17 +493,21 @@
         setTimeout(refresh, 0);
       });
     }
-
+ 
     // ----- Start -----
     window.webexChat = {
       grantConsent: grantConsent, // call from your cookie banner when requireConsent is true
       open: openChat, // open chat from your own code
-      refresh: refresh // call from your router if page data updates after navigation
+      refresh: refresh, // call from your router if page data updates after navigation
+      language: detectBrowserLanguage, // run webexChat.language() in dev tools to see the value sent
+      widgetLanguage: function () {
+        return chosenWidget; // "default", or the languageWidgets key that loaded, e.g. "es"
+      }
     };
-
+ 
     // Resend fields if the visitor changes their browser language mid-visit.
     if ((config.browserLanguage || {}).enabled) window.addEventListener("languagechange", refresh);
-
+ 
     onChatReady(function (w) {
       document.documentElement.classList.add("webex-chat-ready");
       sendCustomFields(w);
@@ -515,7 +517,7 @@
         openChat();
       }
     });
-
+ 
     if (config.singlePageApp) watchRouteChanges();
     if (!config.requireConsent || hasStoredConsent()) loadChat();
   })();
