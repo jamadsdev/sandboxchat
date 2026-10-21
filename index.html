@@ -307,10 +307,51 @@
       return prefs;
     }
  
-    // Returns the visitor's preferred language as a tag ("es-MX" or "es"), or "" if unknown.
+    // ----- Forced language (?chatlang=) -----
+    // ?chatlang=es replaces the browser's languages for both the widget choice and the
+    // Browser Language field, for the rest of the browser session. ?chatlang=auto clears it.
+    var FORCED_LANG_KEY = "webexChatLang";
+    var forcedLang = ""; // set once at startup by resolveForcedLanguage()
+ 
+    function resolveForcedLanguage() {
+      var param = null;
+      try {
+        param = new URLSearchParams(location.search).get("chatlang");
+      } catch (e) {}
+      if (param !== null) {
+        if (param === "" || param.toLowerCase() === "auto") {
+          try {
+            sessionStorage.removeItem(FORCED_LANG_KEY);
+            sessionStorage.removeItem(WIDGET_KEY); // pick the widget from the browser's languages again
+          } catch (e) {}
+          return "";
+        }
+        var tag = canonicalTag(param);
+        if (tag) {
+          try {
+            sessionStorage.setItem(FORCED_LANG_KEY, tag);
+          } catch (e) {}
+          return tag;
+        }
+        console.warn('Ignoring ?chatlang=' + param + ": not a valid language code.");
+      }
+      var stored = null;
+      try {
+        stored = sessionStorage.getItem(FORCED_LANG_KEY);
+      } catch (e) {}
+      return canonicalTag(stored);
+    }
+ 
+    // The forced language if set, otherwise the browser's languages in preference order.
+    function languagePrefs() {
+      return forcedLang ? [forcedLang] : browserLanguagePrefs();
+    }
+ 
+    // Returns the visitor's language as a tag ("es-MX" or "es"), or "" if unknown.
+    // Uses the ?chatlang= value instead of the browser's languages when one is set.
     function detectBrowserLanguage() {
       var opts = config.browserLanguage || {};
-      var prefs = browserLanguagePrefs();
+      var prefs = languagePrefs();
       var supported = (opts.supported || []).map(function (s) {
         return primaryTag(String(s));
       });
@@ -358,15 +399,8 @@
     }
  
     function chooseWidget(valid) {
-      // 1. Test override: ?chatlang=es
-      var forced = null;
-      try {
-        forced = new URLSearchParams(location.search).get("chatlang");
-      } catch (e) {}
-      if (forced) {
-        var forcedTag = canonicalTag(forced);
-        return (forcedTag && widgetForTag(forcedTag, valid)) || "default";
-      }
+      // 1. Forced language (?chatlang=, kept for the session).
+      if (forcedLang) return widgetForTag(forcedLang, valid) || "default";
       // 2. Same widget as earlier in this session, so a chat in progress stays visible.
       var stored = null;
       try {
@@ -495,6 +529,8 @@
     }
  
     // ----- Start -----
+    forcedLang = resolveForcedLanguage(); // read ?chatlang= once, before the widget is chosen
+ 
     window.webexChat = {
       grantConsent: grantConsent, // call from your cookie banner when requireConsent is true
       open: openChat, // open chat from your own code
